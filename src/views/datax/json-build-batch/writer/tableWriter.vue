@@ -30,6 +30,7 @@
       <el-form-item label="数据库表名：">
         <el-input v-model="tableFilter" placeholder="输入关键词过滤表名" clearable size="small" style="width: 200px; margin-bottom: 8px;" />
         <el-checkbox v-model="writerForm.checkAll" :indeterminate="writerForm.isIndeterminate" @change="wHandleCheckAllChange">全选</el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ writerForm.tables.length }} 张表</span>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="writerForm.tables" @change="wHandleCheckedChange">
           <el-checkbox v-for="c in filteredTbList" :key="c" :label="c">{{ c }}</el-checkbox>

@@ -7,6 +7,7 @@
           :indeterminate="readerForm.isIndeterminate"
           @change="lHandleCheckAllChange"
         >全选</el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ readerForm.ltables.length }} 张表</span>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="readerForm.ltables" @change="lHandleCheckedChange">
           <el-checkbox v-for="c in sortedFromTablesList" :key="c" :label="c">{{ c }}</el-checkbox>
@@ -18,6 +19,7 @@
           :indeterminate="readerForm.isIndeterminate"
           @change="rHandleCheckAllChange"
         >全选</el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ readerForm.rtables.length }} 张表</span>
         <div style="margin: 20px 0;" />
         <el-checkbox-group v-model="readerForm.rtables" @change="rHandleCheckedChange">
           <el-checkbox v-for="c in sortedToTablesList" :key="c" :label="c">{{ c }}</el-checkbox>
