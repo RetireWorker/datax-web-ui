@@ -170,10 +170,10 @@
 </template>
 
 <script>
-import * as datasourceApi from '@/api/datax-jdbcDatasource'
-import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
-import Pagination from '@/components/Pagination'
+import * as datasourceApi from '@/api/datax-jdbcDatasource';
+import Pagination from '@/components/Pagination';
+import waves from '@/directive/waves'; // waves directive
+import { parseTime } from '@/utils';
 
 export default {
   name: 'JdbcDatasource',
@@ -239,7 +239,8 @@ export default {
         { value: 'hive', label: 'hive' },
         { value: 'hbase', label: 'hbase' },
         { value: 'mongodb', label: 'mongodb' },
-        { value: 'clickhouse', label: 'clickhouse' }
+        { value: 'clickhouse', label: 'clickhouse' },
+        { value: 'dm', label: '达梦' }
       ],
       jdbc: true,
       hbase: false,
@@ -271,6 +272,9 @@ export default {
         this.temp.jdbcDriverClass = 'org.apache.hive.jdbc.HiveDriver'
         this.hbase = this.mongodb = false
         this.jdbc = true
+      } else if (datasource === 'dm') {
+        this.temp.jdbcUrl = 'jdbc:dm://{host}:{port}'
+        this.temp.jdbcDriverClass = 'dm.jdbc.driver.DmDriver'
       }
       this.getShowStrategy(datasource)
     },
