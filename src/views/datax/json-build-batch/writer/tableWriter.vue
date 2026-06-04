@@ -122,6 +122,8 @@ export default {
           this.wTbList = response
             .filter(t => !t.toLowerCase().startsWith('sys'))
             .sort((a, b) => a.localeCompare(b))
+          // 默认匹配选中 Reader 已勾选的同名表
+          this.autoMatchReaderTables()
         })
       }
     },
@@ -173,6 +175,18 @@ export default {
     },
     getTableName() {
       return this.fromTableName
+    },
+    // 默认匹配选中 Reader 已勾选的同名表（两端都可能带 Schema 前缀，统一提取纯表名后再匹配）
+    autoMatchReaderTables() {
+      const readerData = this.getReaderData()
+      if (readerData && readerData.tables && readerData.tables.length > 0) {
+        const stripSchema = (t) => {
+          const parts = t.split('.')
+          return parts.length > 1 ? parts[parts.length - 1] : t
+        }
+        const readerTableNames = readerData.tables.map(stripSchema)
+        this.writerForm.tables = this.wTbList.filter(t => readerTableNames.includes(stripSchema(t)))
+      }
     },
     createTable() {
       const obj = {
