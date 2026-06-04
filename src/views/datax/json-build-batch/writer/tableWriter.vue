@@ -28,10 +28,11 @@
       </el-form-item>
       <div style="margin: 5px 0;" />
       <el-form-item label="数据库表名：">
+        <el-input v-model="tableFilter" placeholder="输入关键词过滤表名" clearable size="small" style="width: 200px; margin-bottom: 8px;" />
         <el-checkbox v-model="writerForm.checkAll" :indeterminate="writerForm.isIndeterminate" @change="wHandleCheckAllChange">全选</el-checkbox>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="writerForm.tables" @change="wHandleCheckedChange">
-          <el-checkbox v-for="c in wTbList" :key="c" :label="c">{{ c }}</el-checkbox>
+          <el-checkbox v-for="c in filteredTbList" :key="c" :label="c">{{ c }}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
     </el-form>
@@ -57,6 +58,7 @@ export default {
       wTbList: [],
       dataSource: '',
       createTableName: '',
+      tableFilter: '',
       writerForm: {
         datasourceId: undefined,
         tables: [],
@@ -69,6 +71,13 @@ export default {
         datasourceId: [{ required: true, message: 'this is required', trigger: 'change' }],
         tableName: [{ required: true, message: 'this is required', trigger: 'change' }]
       }
+    }
+  },
+  computed: {
+    filteredTbList() {
+      const keyword = this.tableFilter.trim().toLowerCase()
+      if (!keyword) return this.wTbList
+      return this.wTbList.filter(t => t.toLowerCase().includes(keyword))
     }
   },
   watch: {
@@ -110,6 +119,8 @@ export default {
         // 组装
         dsQueryApi.getTables(obj).then(response => {
           this.wTbList = response
+            .filter(t => !t.toLowerCase().startsWith('sys'))
+            .sort((a, b) => a.localeCompare(b))
         })
       }
     },

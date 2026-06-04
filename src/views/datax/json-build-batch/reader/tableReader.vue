@@ -41,9 +41,9 @@
 </template>
 
 <script>
-import * as dsQueryApi from '@/api/metadata-query'
-import { list as jdbcDsList } from '@/api/datax-jdbcDatasource'
-import Bus from '../busReader'
+import { list as jdbcDsList } from '@/api/datax-jdbcDatasource';
+import * as dsQueryApi from '@/api/metadata-query';
+import Bus from '../busReader';
 
 export default {
   name: 'TableReader',
@@ -63,6 +63,7 @@ export default {
       customType: '',
       customValue: '',
       dataSource: '',
+      tableFilter: '',
       readerForm: {
         datasourceId: undefined,
         tables: [],
@@ -75,6 +76,13 @@ export default {
         datasourceId: [{ required: true, message: 'this is required', trigger: 'change' }],
         tableName: [{ required: true, message: 'this is required', trigger: 'change' }]
       }
+    }
+  },
+  computed: {
+    filteredTbList() {
+      const keyword = this.tableFilter.trim().toLowerCase()
+      if (!keyword) return this.rTbList
+      return this.rTbList.filter(t => t.toLowerCase().includes(keyword))
     }
   },
   watch: {
@@ -117,6 +125,8 @@ export default {
         dsQueryApi.getTables(obj).then(response => {
           if (response) {
             this.rTbList = response
+              .filter(t => !t.toLowerCase().startsWith('sys'))
+              .sort((a, b) => a.localeCompare(b))
           }
         })
       }
