@@ -99,3 +99,21 @@ export function batchAddJob(data) {
   })
 }
 
+// 批量启动任务
+export function batchStartJob(data) {
+  return request({
+    url: '/api/job/batchStart',
+    method: 'post',
+    data
+  })
+}
+
+// 批量删除任务
+export function batchRemoveJob(data) {
+  return request({
+    url: '/api/job/batchRemove',
+    method: 'post',
+    data
+  })
+}
+

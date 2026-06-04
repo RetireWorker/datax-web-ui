@@ -14,6 +14,9 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         添加
       </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-video-play" :disabled="!selectedRows.length" @click="handlerBatchStart">
+        批量启动
+      </el-button>
       <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
       </el-checkbox> -->
@@ -27,7 +30,9 @@
       highlight-current-row
       style="width: 100%"
       size="medium"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">{{ scope.row.id }}</template>
       </el-table-column>
@@ -314,16 +319,16 @@
 
 <script>
 import * as executor from '@/api/datax-executor'
-import * as job from '@/api/datax-job-info'
-import waves from '@/directive/waves' // waves directive
-import Cron from '@/components/Cron'
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import JsonEditor from '@/components/JsonEditor'
-import ShellEditor from '@/components/ShellEditor'
-import PythonEditor from '@/components/PythonEditor'
-import PowershellEditor from '@/components/PowershellEditor'
 import * as datasourceApi from '@/api/datax-jdbcDatasource'
+import * as job from '@/api/datax-job-info'
 import * as jobProjectApi from '@/api/datax-job-project'
+import Cron from '@/components/Cron'
+import JsonEditor from '@/components/JsonEditor'
+import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
+import PowershellEditor from '@/components/PowershellEditor'
+import PythonEditor from '@/components/PythonEditor'
+import ShellEditor from '@/components/ShellEditor'
+import waves from '@/directive/waves'; // waves directive
 import { isJSON } from '@/utils/validate'
 
 export default {
@@ -358,6 +363,7 @@ export default {
       list: null,
       listLoading: true,
       total: 0,
+      selectedRows: [],
       listQuery: {
         current: 1,
         size: 10,
@@ -742,6 +748,60 @@ export default {
         const { content } = response
         this.registerNode.push(content)
       })
+    },
+    // 复选框选择变化
+    handleSelectionChange(val) {
+      this.selectedRows = val
+    },
+    // 批量启动任务
+    handlerBatchStart() {
+      if (!this.selectedRows.length) {
+        this.$message.warning('请先选择要启动的任务')
+        return
+      }
+      const jobNames = this.selectedRows.map(item => item.jobDesc).join('、')
+      this.$confirm(`确定要批量启动以下任务吗？<br/>${jobNames}`, '批量启动确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        dangerouslyUseHTMLString: true,
+        type: 'warning'
+      }).then(() => {
+        const ids = this.selectedRows.map(item => item.id)
+        job.batchStartJob(ids).then(response => {
+          this.$notify({
+            title: 'Success',
+            message: response.msg || '批量启动操作完成',
+            type: 'success',
+            duration: 3000
+          })
+          this.fetchData()
+        })
+      }).catch(_ => {})
+    },
+    // 批量删除任务
+    handlerBatchDelete() {
+      if (!this.selectedRows.length) {
+        this.$message.warning('请先选择要删除的任务')
+        return
+      }
+      const jobNames = this.selectedRows.map(item => item.jobDesc).join('、')
+      this.$confirm(`确定要批量删除以下任务吗？此操作不可恢复！<br/>${jobNames}`, '批量删除确认', {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        dangerouslyUseHTMLString: true,
+        type: 'warning'
+      }).then(() => {
+        const ids = this.selectedRows.map(item => item.id)
+        job.batchRemoveJob(ids).then(response => {
+          this.$notify({
+            title: 'Success',
+            message: response.msg || '批量删除操作完成',
+            type: 'success',
+            duration: 3000
+          })
+          this.fetchData()
+        })
+      }).catch(_ => {})
     }
   }
 }
