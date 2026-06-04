@@ -9,7 +9,7 @@
         >全选</el-checkbox>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="readerForm.ltables" @change="lHandleCheckedChange">
-          <el-checkbox v-for="c in fromTablesList" :key="c" :label="c">{{ c }}</el-checkbox>
+          <el-checkbox v-for="c in sortedFromTablesList" :key="c" :label="c">{{ c }}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
       <el-form-item label="目标表">
@@ -20,7 +20,7 @@
         >全选</el-checkbox>
         <div style="margin: 20px 0;" />
         <el-checkbox-group v-model="readerForm.rtables" @change="rHandleCheckedChange">
-          <el-checkbox v-for="c in toTablesList" :key="c" :label="c">{{ c }}</el-checkbox>
+          <el-checkbox v-for="c in sortedToTablesList" :key="c" :label="c">{{ c }}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
     </el-form>
@@ -42,6 +42,14 @@ export default {
         rcheckAll: false,
         isIndeterminate: true
       }
+    }
+  },
+  computed: {
+    sortedFromTablesList() {
+      return [...this.fromTablesList].sort((a, b) => a.localeCompare(b))
+    },
+    sortedToTablesList() {
+      return [...this.toTablesList].sort((a, b) => a.localeCompare(b))
     }
   },
   mounted() {
