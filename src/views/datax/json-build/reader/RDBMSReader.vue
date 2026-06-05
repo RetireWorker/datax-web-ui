@@ -40,6 +40,7 @@
           @change="rHandleCheckAllChange"
         >全选
         </el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ readerForm.columns.length }} 个字段</span>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="readerForm.columns" @change="rHandleCheckedChange">
           <el-checkbox v-for="c in rColumnList" :key="c" :label="c">{{ c }}</el-checkbox>
@@ -53,9 +54,9 @@
 </template>
 
 <script>
-import * as dsQueryApi from '@/api/metadata-query'
-import { list as jdbcDsList } from '@/api/datax-jdbcDatasource'
-import Bus from '../busReader'
+import { list as jdbcDsList } from '@/api/datax-jdbcDatasource';
+import * as dsQueryApi from '@/api/metadata-query';
+import Bus from '../busReader';
 
 export default {
   name: 'RDBMSReader',
@@ -134,6 +135,8 @@ export default {
         dsQueryApi.getTables(obj).then(response => {
           if (response) {
             this.rTbList = response
+              .filter(t => !t.toLowerCase().startsWith('sys'))
+              .sort((a, b) => a.localeCompare(b))
           }
         })
       }

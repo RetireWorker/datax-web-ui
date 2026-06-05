@@ -7,6 +7,7 @@
           :indeterminate="readerForm.isIndeterminate"
           @change="lHandleCheckAllChange"
         >全选</el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ readerForm.lcolumns.length }} 个字段</span>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="readerForm.lcolumns" @change="lHandleCheckedChange">
           <el-checkbox v-for="c in fromColumnsList" :key="c" :label="c">{{ c }}</el-checkbox>
@@ -18,6 +19,7 @@
           :indeterminate="readerForm.isIndeterminate"
           @change="rHandleCheckAllChange"
         >全选</el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ readerForm.rcolumns.length }} 个字段</span>
         <div style="margin: 20px 0;" />
         <el-checkbox-group v-model="readerForm.rcolumns" @change="rHandleCheckedChange">
           <el-checkbox v-for="c in toColumnsList" :key="c" :label="c">{{ c }}</el-checkbox>

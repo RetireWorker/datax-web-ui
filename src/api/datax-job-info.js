@@ -117,3 +117,12 @@ export function batchRemoveJob(data) {
   })
 }
 
+// 批量停止任务
+export function batchStopJob(data) {
+  return request({
+    url: '/api/job/batchStop',
+    method: 'post',
+    data
+  })
+}
+

@@ -50,6 +50,7 @@
       <div style="margin: 5px 0;" />
       <el-form-item label="字段：">
         <el-checkbox v-model="writerForm.checkAll" :indeterminate="writerForm.isIndeterminate" @change="wHandleCheckAllChange">全选</el-checkbox>
+        <span style="color: #909399; font-size: 12px; margin-left: 8px;">已选 {{ writerForm.columns.length }} 个字段</span>
         <div style="margin: 15px 0;" />
         <el-checkbox-group v-model="writerForm.columns" @change="wHandleCheckedChange">
           <el-checkbox v-for="c in fromColumnList" :key="c" :label="c">{{ c }}</el-checkbox>
