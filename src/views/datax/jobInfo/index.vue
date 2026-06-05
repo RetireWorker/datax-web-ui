@@ -17,6 +17,12 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-video-play" :disabled="!selectedRows.length" @click="handlerBatchStart">
         批量启动
       </el-button>
+      <el-button class="filter-item" style="margin-left: 5px;" type="warning" icon="el-icon-video-pause" :disabled="!selectedRows.length" @click="handlerBatchStop">
+        批量停止
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-delete" :disabled="!selectedRows.length" @click="handlerBatchDelete">
+        批量删除
+      </el-button>
       <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
       </el-checkbox> -->
@@ -371,7 +377,8 @@ export default {
         projectIds: '',
         triggerStatus: -1,
         jobDesc: '',
-        glueType: ''
+        glueType: '',
+        lastHandleCode: -1
       },
       showCronBox: false,
       dialogPluginVisible: false,
@@ -496,6 +503,18 @@ export default {
         { value: 502, label: '失败(超时)' },
         { value: 200, label: '成功' },
         { value: 0, label: '无' }
+      ],
+      triggerStatusList: [
+        { value: -1, label: '全部' },
+        { value: 1, label: '启动' },
+        { value: 0, label: '停止' }
+      ],
+      handleCodeList: [
+        { value: -1, label: '全部' },
+        { value: 500, label: '失败' },
+        { value: 502, label: '失败(超时)' },
+        { value: 200, label: '成功' },
+        { value: 0, label: '无' }
       ]
     }
   },
@@ -541,6 +560,13 @@ export default {
       this.listLoading = true
       if (this.projectIds) {
         this.listQuery.projectIds = this.projectIds.toString()
+      }
+      // clearable 清空后转为 -1（全部）
+      if (this.listQuery.triggerStatus === '' || this.listQuery.triggerStatus == null) {
+        this.listQuery.triggerStatus = -1
+      }
+      if (this.listQuery.lastHandleCode === '' || this.listQuery.lastHandleCode == null) {
+        this.listQuery.lastHandleCode = -1
       }
 
       job.getList(this.listQuery).then(response => {
@@ -796,6 +822,31 @@ export default {
           this.$notify({
             title: 'Success',
             message: response.msg || '批量删除操作完成',
+            type: 'success',
+            duration: 3000
+          })
+          this.fetchData()
+        })
+      }).catch(_ => {})
+    },
+    // 批量停止任务
+    handlerBatchStop() {
+      if (!this.selectedRows.length) {
+        this.$message.warning('请先选择要停止的任务')
+        return
+      }
+      const jobNames = this.selectedRows.map(item => item.jobDesc).join('、')
+      this.$confirm(`确定要批量停止以下任务吗？<br/>${jobNames}`, '批量停止确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        dangerouslyUseHTMLString: true,
+        type: 'warning'
+      }).then(() => {
+        const ids = this.selectedRows.map(item => item.id)
+        job.batchStopJob(ids).then(response => {
+          this.$notify({
+            title: 'Success',
+            message: response.msg || '批量停止操作完成',
             type: 'success',
             duration: 3000
           })
