@@ -12,6 +12,10 @@ export default {
     sendTables(fromTablesList, toTablesList) {
       this.$refs.mapper.fromTablesList = fromTablesList
       this.$refs.mapper.toTablesList = toTablesList
+      // 按表名自动匹配目标表选中
+      this.$nextTick(() => {
+        this.$refs.mapper.autoMatchTargetTables()
+      })
     },
     getLTables() {
       return this.$refs.mapper.getLTables()

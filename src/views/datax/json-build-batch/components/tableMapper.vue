@@ -80,6 +80,22 @@ export default {
     },
     getRTables() {
       return this.readerForm.rtables
+    },
+    // 按表名自动将目标表与源表选中项匹配（两端都可能带 Schema 前缀）
+    autoMatchTargetTables() {
+      if (!this.fromTablesList.length || !this.toTablesList.length) return
+      const stripSchema = (t) => {
+        const parts = t.split('.')
+        const name = parts.length > 1 ? parts[parts.length - 1] : t
+        return name.replace(/^"|"$/g, '')
+      }
+      // 默认全选源端表
+      if (!this.readerForm.ltables.length) {
+        this.readerForm.ltables = [...this.fromTablesList]
+      }
+      // 按表名匹配目标端表
+      const sourceNames = this.readerForm.ltables.map(stripSchema)
+      this.readerForm.rtables = this.toTablesList.filter(t => sourceNames.includes(stripSchema(t)))
     }
   }
 }

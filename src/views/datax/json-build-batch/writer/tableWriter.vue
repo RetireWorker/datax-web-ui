@@ -182,7 +182,8 @@ export default {
       if (readerData && readerData.tables && readerData.tables.length > 0) {
         const stripSchema = (t) => {
           const parts = t.split('.')
-          return parts.length > 1 ? parts[parts.length - 1] : t
+          const name = parts.length > 1 ? parts[parts.length - 1] : t
+          return name.replace(/^"|"$/g, '')
         }
         const readerTableNames = readerData.tables.map(stripSchema)
         this.writerForm.tables = this.wTbList.filter(t => readerTableNames.includes(stripSchema(t)))
