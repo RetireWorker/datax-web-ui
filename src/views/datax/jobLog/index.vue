@@ -134,6 +134,9 @@
         <el-button type="primary" @click="loadLog">
           刷新日志
         </el-button>
+        <el-button type="success" @click="copyLog">
+          复制日志
+        </el-button>
       </div>
     </el-dialog>
 
@@ -142,10 +145,10 @@
 </template>
 
 <script>
-import * as log from '@/api/datax-job-log'
-import * as job from '@/api/datax-job-info'
-import waves from '@/directive/waves' // waves directive
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import * as job from '@/api/datax-job-info';
+import * as log from '@/api/datax-job-log';
+import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
+import waves from '@/directive/waves'; // waves directive
 
 export default {
   name: 'JobLog',
@@ -309,6 +312,17 @@ export default {
           this.logContent = response.content.logContent
         }
         this.logLoading = false
+      })
+    },
+    copyLog() {
+      if (!this.logContent) {
+        this.$message.warning('暂无日志内容')
+        return
+      }
+      navigator.clipboard.writeText(this.logContent).then(() => {
+        this.$message.success('日志已复制到剪贴板')
+      }).catch(() => {
+        this.$message.error('复制失败，请手动复制')
       })
     },
     killRunningJob(row) {
