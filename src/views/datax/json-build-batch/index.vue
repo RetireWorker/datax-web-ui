@@ -179,7 +179,9 @@ export default {
       const rdbmsReader = {
         readerSplitPk: readerData.splitPk
       }
-      const rdbmsWriter = {}
+      const rdbmsWriter = {
+        writeMode: writeData.writeMode
+      }
       const obj = {
         readerDatasourceId: readerData.datasourceId,
         readerTables: readerTables,

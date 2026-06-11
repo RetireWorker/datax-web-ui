@@ -307,6 +307,15 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row v-if="temp.glueType==='BEAN' && showWriteModeField" :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="写入模式">
+              <el-select v-model="writeMode" placeholder="请选择写入模式">
+                <el-option v-for="item in writeModes" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <json-editor v-if="temp.glueType==='BEAN'" ref="jsonEditor" v-model="jobJson" />
       <shell-editor v-if="temp.glueType==='GLUE_SHELL'" ref="shellEditor" v-model="glueSource" />
@@ -331,11 +340,11 @@ import * as job from '@/api/datax-job-info'
 import * as jobProjectApi from '@/api/datax-job-project'
 import Cron from '@/components/Cron'
 import JsonEditor from '@/components/JsonEditor'
-import Pagination from '@/components/Pagination'; // secondary package based on el-pagination
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import PowershellEditor from '@/components/PowershellEditor'
 import PythonEditor from '@/components/PythonEditor'
 import ShellEditor from '@/components/ShellEditor'
-import waves from '@/directive/waves'; // waves directive
+import waves from '@/directive/waves' // waves directive
 import { isJSON } from '@/utils/validate'
 
 export default {
@@ -445,6 +454,8 @@ export default {
         this.timeOffset = 0
         this.timeFormatType = 'yyyy-MM-dd'
         this.partitionField = ''
+        this.writeMode = 'insert'
+        this.showWriteModeField = false
       },
       executorList: '',
       jobIdList: '',
@@ -499,6 +510,13 @@ export default {
         { value: 'yyyy-MM-dd HH:mm:ss', label: 'yyyy-MM-dd HH:mm:ss' },
         { value: 'Timestamp', label: '时间戳' }
       ],
+      writeModes: [
+        { value: 'insert', label: 'insert 插入' },
+        { value: 'replace', label: 'replace 覆盖写入' },
+        { value: 'update', label: 'update 存在则更新' }
+      ],
+      writeMode: 'insert',
+      showWriteModeField: false,
       statusList: [
         { value: 500, label: '失败' },
         { value: 502, label: '失败(超时)' },
@@ -579,6 +597,51 @@ export default {
     },
     incStartTimeFormat(vData) {
     },
+    // 解析任务 json 中的 writer 配置，供编辑页辅助显示 writeMode。
+    getWriterConfig(jobJson) {
+      if (!jobJson) {
+        return null
+      }
+      const data = typeof jobJson === 'string' ? JSON.parse(jobJson) : jobJson
+      if (!data.job || !data.job.content || !data.job.content.length) {
+        return null
+      }
+      return data.job.content[0].writer || null
+    },
+    // 仅当前部署的 DataX 已确认 mysqlwriter 支持 writeMode，因此编辑页只对其开放辅助配置。
+    loadWriteModeConfig() {
+      this.showWriteModeField = false
+      this.writeMode = 'insert'
+      if (!this.jobJson) {
+        return
+      }
+      try {
+        const writer = this.getWriterConfig(this.jobJson)
+        if (writer && writer.name === 'mysqlwriter') {
+          this.showWriteModeField = true
+          this.writeMode = (writer.parameter && writer.parameter.writeMode) || 'insert'
+        }
+      } catch (e) {
+        this.showWriteModeField = false
+      }
+    },
+    // 保存前将编辑页中的 writeMode 回写到 mysqlwriter 的 DataX json。
+    syncWriteModeToJobJson() {
+      try {
+        const data = typeof this.jobJson === 'string' ? JSON.parse(this.jobJson) : this.jobJson
+        const writer = this.getWriterConfig(data)
+        if (writer && writer.name === 'mysqlwriter') {
+          if (!writer.parameter) {
+            writer.parameter = {}
+          }
+          writer.parameter.writeMode = this.writeMode || 'insert'
+          this.showWriteModeField = true
+          this.jobJson = data
+        }
+      } catch (e) {
+        this.showWriteModeField = false
+      }
+    },
     handleCreate() {
       this.resetTemp()
       this.dialogStatus = 'create'
@@ -588,6 +651,9 @@ export default {
       })
     },
     createData() {
+      if (this.temp.glueType === 'BEAN') {
+        this.syncWriteModeToJobJson()
+      }
       if (this.temp.glueType === 'BEAN' && !isJSON(this.jobJson)) {
         this.$notify({
           title: 'Fail',
@@ -627,6 +693,7 @@ export default {
       this.resetTemp()
       this.temp = Object.assign({}, row) // copy obj
       if (this.temp.jobJson) this.jobJson = JSON.parse(this.temp.jobJson)
+      this.loadWriteModeConfig()
       this.glueSource = this.temp.glueSource
       const arrchildSet = []
       const arrJobIdList = []
@@ -663,6 +730,9 @@ export default {
       })
     },
     updateData() {
+      if (this.temp.glueType === 'BEAN') {
+        this.syncWriteModeToJobJson()
+      }
       this.temp.jobJson = typeof (this.jobJson) !== 'string' ? JSON.stringify(this.jobJson) : this.jobJson
       if (this.temp.glueType === 'BEAN' && !isJSON(this.temp.jobJson)) {
         this.$notify({

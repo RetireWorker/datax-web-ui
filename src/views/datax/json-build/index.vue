@@ -242,6 +242,7 @@ export default {
         querySql: readerData.querySql
       }
       const rdbmsWriter = {
+        writeMode: writeData.writeMode,
         preSql: writeData.preSql,
         postSql: writeData.postSql
       }

@@ -62,6 +62,11 @@
       <el-form-item label="postSql">
         <el-input v-model="writerForm.postSql" placeholder="多个用;分隔" type="textarea" style="width: 42%" />
       </el-form-item>
+      <el-form-item v-if="showWriteMode" label="writeMode" prop="writeMode">
+        <el-select v-model="writerForm.writeMode" placeholder="请选择写入模式" style="width: 300px">
+          <el-option v-for="item in writeModes" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
     </el-form>
   </div>
 </template>
@@ -92,6 +97,7 @@ export default {
         columns: [],
         checkAll: false,
         isIndeterminate: true,
+        writeMode: 'insert',
         preSql: '',
         postSql: '',
         ifCreateTable: false,
@@ -102,7 +108,18 @@ export default {
         datasourceId: [{ required: true, message: 'this is required', trigger: 'change' }],
         tableName: [{ required: true, message: 'this is required', trigger: 'change' }],
         tableSchema: [{ required: true, message: 'this is required', trigger: 'change' }]
-      }
+      },
+      writeModes: [
+        { value: 'insert', label: 'insert 插入' },
+        { value: 'replace', label: 'replace 覆盖写入' },
+        { value: 'update', label: 'update 存在则更新' }
+      ]
+    }
+  },
+  computed: {
+    // 当前部署的 DataX 仅确认 mysqlwriter 支持 writeMode 配置
+    showWriteMode() {
+      return this.dataSource === 'mysql'
     }
   },
   watch: {
@@ -165,6 +182,7 @@ export default {
       // 清空
       this.writerForm.tableName = ''
       this.writerForm.datasourceId = e
+      this.writerForm.writeMode = 'insert'
       this.wDsList.find((item) => {
         if (item.id === e) {
           this.dataSource = item.datasource
