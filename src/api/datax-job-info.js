@@ -126,3 +126,12 @@ export function batchStopJob(data) {
   })
 }
 
+// 批量执行一次任务
+export function batchTriggerJob(data) {
+  return request({
+    url: '/api/job/batchTrigger',
+    method: 'post',
+    data
+  })
+}
+
