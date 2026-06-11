@@ -4,14 +4,18 @@
   </div>
 </template>
 <script>
-import FieldMapper from './components/fieldMapper'
+import FieldMapper from './components/fieldMapper';
 export default {
   name: 'Mapper',
   components: { FieldMapper },
   methods: {
-    sendColumns(fromColumnsList, toColumnsList) {
-      this.$refs.mapper.fromColumnsList = fromColumnsList
-      this.$refs.mapper.toColumnsList = toColumnsList
+    sendColumnsDetail(fromColumnsDetail, toColumnsDetail, fromColumnList, toColumnList) {
+      this.$refs.mapper.fromColumnsDetail = fromColumnsDetail
+      this.$refs.mapper.toColumnsDetail = toColumnsDetail
+      this.$refs.mapper.fromColumnList = fromColumnList
+      this.$refs.mapper.toColumnList = toColumnList
+      // 触发自动匹配
+      this.$refs.mapper.autoMatch()
     },
     getLColumns() {
       return this.$refs.mapper.getLColumns()

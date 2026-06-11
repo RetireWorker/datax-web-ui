@@ -29,6 +29,15 @@ export function getColumns(params) {
   })
 }
 
+// 获取字段详细信息（名称、类型、注释）
+export function getColumnsDetail(params) {
+  return request({
+    url: '/api/metadata/getColumnsDetail',
+    method: 'get',
+    params
+  })
+}
+
 // 根据sql获取字段
 export function getColumnsByQuerySql(params) {
   return request({

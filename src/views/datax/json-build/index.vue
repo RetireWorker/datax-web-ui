@@ -71,6 +71,7 @@
 import * as dataxJsonApi from '@/api/datax-json'
 import * as jobTemplate from '@/api/datax-job-template'
 import * as job from '@/api/datax-job-info'
+import { getColumnsDetail } from '@/api/metadata-query'
 import Pagination from '@/components/Pagination'
 import JsonEditor from '@/components/JsonEditor'
 import Reader from './reader'
@@ -148,8 +149,10 @@ export default {
   },
   methods: {
     next() {
-      const fromColumnList = this.$refs.reader.getData().columns
-      const toColumnsList = this.$refs.writer.getData().columns
+      const readerData = this.$refs.reader.getData()
+      const writeData = this.$refs.writer.getData()
+      const fromColumnList = readerData.columns
+      const toColumnsList = writeData.columns
       // const fromTableName = this.$refs.reader.getData().tableName
       // 第一步 reader 判断是否已选字段
       if (this.active === 1) {
@@ -161,7 +164,7 @@ export default {
       } else {
         // 将第一步和第二步得到的字段名字发送到第三步
         if (this.active === 2) {
-          this.$refs.mapper.sendColumns(fromColumnList, toColumnsList)
+          this.fetchColumnsDetail(readerData, writeData, fromColumnList, toColumnsList)
         }
         if (this.active === 4) {
           this.temp.jobJson = this.configJson
@@ -184,6 +187,18 @@ export default {
       if (this.active > 1) {
         this.active--
       }
+    },
+    // 获取源端和目标端的字段详细信息
+    fetchColumnsDetail(readerData, writeData, fromColumnList, toColumnsList) {
+      const readerParams = { datasourceId: readerData.datasourceId, tableName: readerData.tableName }
+      const writerParams = { datasourceId: writeData.datasourceId, tableName: writeData.tableName }
+      // 并行获取两端字段详细信息
+      Promise.all([
+        getColumnsDetail(readerParams),
+        getColumnsDetail(writerParams)
+      ]).then(([fromColumns, toColumns]) => {
+        this.$refs.mapper.sendColumnsDetail(fromColumns, toColumns, fromColumnList, toColumnsList)
+      })
     },
     // 构建json
     buildJson() {
