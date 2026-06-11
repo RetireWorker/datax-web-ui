@@ -20,6 +20,9 @@
       <el-button class="filter-item" style="margin-left: 5px;" type="warning" icon="el-icon-video-pause" :disabled="!selectedRows.length" @click="handlerBatchStop">
         批量停止
       </el-button>
+      <el-button class="filter-item" style="margin-left: 5px;" type="primary" icon="el-icon-caret-right" :disabled="!selectedRows.length" @click="handlerBatchTrigger">
+        批量执行一次
+      </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-delete" :disabled="!selectedRows.length" @click="handlerBatchDelete">
         批量删除
       </el-button>
@@ -103,17 +106,15 @@
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right">
         <template slot-scope="{row}">
-          <!-- <el-dropdown type="primary" size="small"> -->
-          <!-- 操作 -->
+          <el-button type="text" size="small" @click="handlerUpdate(row)">编辑</el-button>
+          <el-button type="text" size="small" @click="handlerExecute(row)">执行一次</el-button>
           <el-dropdown trigger="click">
             <span class="el-dropdown-link">
               操作<i class="el-icon-arrow-down el-icon--right" />
             </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="handlerExecute(row)">执行一次</el-dropdown-item>
               <el-dropdown-item @click.native="handlerViewLog(row)">查询日志</el-dropdown-item>
-              <el-dropdown-item divided @click.native="handlerUpdate(row)">编辑</el-dropdown-item>
-              <el-dropdown-item @click.native="handlerDelete(row)">删除</el-dropdown-item>
+              <el-dropdown-item divided @click.native="handlerDelete(row)">删除</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
@@ -847,6 +848,31 @@ export default {
           this.$notify({
             title: 'Success',
             message: response.msg || '批量停止操作完成',
+            type: 'success',
+            duration: 3000
+          })
+          this.fetchData()
+        })
+      }).catch(_ => {})
+    },
+    // 批量执行一次任务
+    handlerBatchTrigger() {
+      if (!this.selectedRows.length) {
+        this.$message.warning('请先选择要执行的任务')
+        return
+      }
+      const jobNames = this.selectedRows.map(item => item.jobDesc).join('、')
+      this.$confirm(`确定要批量执行以下任务吗？<br/>${jobNames}`, '批量执行确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        dangerouslyUseHTMLString: true,
+        type: 'warning'
+      }).then(() => {
+        const ids = this.selectedRows.map(item => item.id)
+        job.batchTriggerJob(ids).then(response => {
+          this.$notify({
+            title: 'Success',
+            message: response.msg || '批量执行操作完成',
             type: 'success',
             duration: 3000
           })
